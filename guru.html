@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penilaian Multi-Kelas</title>
+    <style>
+        :root { 
+            --navy: #0f172a; 
+            --blue: #2563eb; 
+            --red: #ef4444; 
+            --green: #10b981; 
+            --gray: #64748b; 
+            --slate: #f1f5f9;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 1100px; margin: auto; }
+        .hidden { display: none; }
+        
+        /* HEADER ELEGAN */
+        .profile-card { 
+            background: linear-gradient(135deg, #1e293b, #334155); 
+            color: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            margin-bottom: 30px; 
+            display: flex; 
+            align-items: center; 
+            gap: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .profile-icon {
+            background: rgba(255, 255, 255, 0.1);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .profile-info h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.5px; }
+        .profile-grid { 
+            display: grid; 
+            grid-template-columns: auto auto; 
+            gap: 10px 40px; 
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        .info-item { display: flex; align-items: center; gap: 8px; }
+        .badge-status { 
+            background: var(--blue); 
+            color: white; 
+            padding: 2px 10px; 
+            border-radius: 20px; 
+            font-size: 0.75rem; 
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .main-nav { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .nav-btn { padding: 12px 24px; cursor: pointer; border-radius: 8px; font-weight: bold; color: var(--gray); border: none; background: none; transition: 0.3s; }
+        .nav-btn.active { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+
+        .form-box { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        thead tr { background-color: var(--navy); color: white; text-transform: uppercase; font-size: 0.75em; letter-spacing: 1px; }
+        th, td { padding: 15px; border: 1px solid #e2e8f0; text-align: left; }
+        
+        .sub-table { width: 100%; border: none !important; }
+        .sub-table td { border: none !important; padding: 4px 8px !important; background: transparent !important; border-bottom: 1px solid #eee !important; font-size: 0.85em; }
+
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        
+        .btn-save { background: var(--green); color: white; width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 1.1em; cursor: pointer; margin-top: 20px; font-weight: bold; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(1.1); }
+        
+        .kelas-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .kelas-btn { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: var(--navy); cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .kelas-btn.selected { background: var(--navy); color: white; border-color: var(--navy); }
+        .filter-box { background: #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+        .btn-delete { background: var(--red); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.75em; }
+        #loader { display: none; text-align: center; padding: 15px; color: var(--blue); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="loginPage" class="card" style="max-width: 400px; text-align: center; margin-top: 80px;">
+    <div style="font-size: 50px; margin-bottom: 10px;">🏫</div>
+    <h2 style="color: #1e40af; margin-bottom: 5px;">sipandai SMPN 4 Monano</h2>
+    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 25px;">Sistem Penilaian Digital dan Asesmen Integratif </p>
+    <input type="text" id="nipInput" placeholder="Masukkan NIP Anda" style="text-align: center;">
+    <button class="nav-btn active" style="width: 100%; margin-top: 20px;" onclick="prosesLogin()">Login</button>
+</div>
+
+<div id="dashboardPage" class="card hidden">
+    <div class="profile-card">
+        <div class="profile-icon">👤</div>
+        <div class="profile-info">
+            <h1>Selamat Datang, <span id="dispNama">Nama Guru</span></h1>
+            <div class="profile-grid">
+                <div class="info-item">🆔 <b>NIP:</b> <span id="dispNip">-</span></div>
+                <div class="info-item">🛡️ <b>Status:</b> <span id="dispStatus" class="badge-status">-</span></div>
+                <div class="info-item">📚 <b>Mata Pelajaran:</b> <span id="dispMapel">-</span></div>
+                <div class="info-item">📅 <b>Tahun Ajaran:</b> 2025/2026</div>
+                <div class="info-item">⏳ <b>Semester:</b> <span style="color: #60a5fa; font-weight: bold;">Genap</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-nav">
+        <button id="tabInput" class="nav-btn active" onclick="showTab('input')">📥 Input Nilai</button>
+        <button id="tabLihat" class="nav-btn" onclick="showTab('lihat')">📊 Rekap Nilai</button>
+    </div>
+
+    <div id="secInput">
+        <div class="form-box" style="border-left: 5px solid var(--blue); background: #fff;">
+            <h3 style="margin-top:0; color: var(--navy);">1. Pilih Kelas & Tujuan Pembelajaran (TP)</h3>
+            <div class="kelas-selector">
+                <button class="kelas-btn k-input" id="inVII" onclick="setKelas('VII')">Kelas VII</button>
+                <button class="kelas-btn k-input" id="inVIII" onclick="setKelas('VIII')">Kelas VIII</button>
+                <button class="kelas-btn k-input" id="inIX" onclick="setKelas('IX')">Kelas IX</button>
+            </div>
+            <div id="containerTP"></div>
+            <button onclick="tambahBarisTP()" style="cursor:pointer; padding:8px 15px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: 500;">+ Tambah Baris TP</button>
+        </div>
+
+        <div class="form-box" style="background: #fff;">
+            <h3 style="margin-top:0; color: var(--navy);">2. Penilaian Siswa <span id="labelKelas" style="color: var(--blue);"></span></h3>
+            <label><b>Nama Siswa:</b></label>
+            <select id="selSiswa" style="margin-bottom: 20px; margin-top: 8px;"><option value="">-- Pilih Kelas Terlebih Dahulu --</option></select>
+            
+            <table id="tabelNilai">
+                <thead><tr><th>Deskripsi Capaian Pembelajaran (TP)</th><th style="width: 150px; text-align:center;">Skor (0-100)</th></tr></thead>
+                <tbody id="bodyInputNilai"></tbody>
+            </table>
+            <button class="btn-save" id="btnSimpan" onclick="simpanData()">🚀 Simpan Nilai</button>
+        </div>
+    </div>
+
+    <div id="secLihat" class="form-box hidden">
+        <div class="filter-box">
+            <b>Filter Kelas:</b>
+            <select id="filterKelas" onchange="muatNilai()" style="width: 200px;">
+                <option value="SEMUA">Semua Kelas</option>
+                <option value="VII">Kelas VII</option>
+                <option value="VIII">Kelas VIII</option>
+                <option value="IX">Kelas IX</option>
+            </select>
+        </div>
+        <div id="loader">🔄 Menghubungkan ke server...</div>
+        <div style="overflow-x: auto;">
+            <table id="tabelRekap">
+                <thead>
+                    <tr>
+                        <th>Siswa / Kelas</th>
+                        <th style="text-align:center">Rerata</th>
+                        <th>Rincian Nilai</th>
+                        <th>Waktu Input</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyRekap"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="nav-btn" style="color: var(--red); margin-top: 30px; border: 1px solid #e2e8f0; width: 100%; background: #fff;" onclick="location.reload()">🔒 Keluar Aplikasi</button>
+</div>
+
+<script>
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxpSVFkTH8tDKDkeMM1l7iDMlRfxkfAgfy3iMzX7nfl03lRIloew7pxHH7ONG8bmXsG/exec";
+
+    const databaseGuru = [
+        {nama: "Basmawati", nip: "198903202017082004", status: "PNS", mapel: "Bimbingan Konseling"},
+        {nama: "Hadija K. Atima", nip: "198503052009012002", status: "PNS", mapel: "PAI & BP"},
+        {nama: "Mohamad Fadlianto S. Mento", nip: "199402052022211005", status: "PPPK", mapel: "Informatika"},
+        {nama: "Muhlis Dudokia", nip: "198405242019031004", status: "PNS", mapel: "IPS"},
+        {nama: "Ridwan Hasan Pantu", nip: "198110262010011005", status: "PNS", mapel: "Bahasa Inggris"},
+        {nama: "Rita Uno", nip: "197912292023212004", status: "PPPK", mapel: "Prakarya"},
+        {nama: "Sandrawati Anwar", nip: "199210022019032019", status: "PNS", mapel: "IPA"},
+        {nama: "Sulastri Harun", nip: "198105232010012003", status: "PNS", mapel: "PKn"},
+        {nama: "Zainab K. Hamimu", nip: "199009082015032003", status: "PNS", mapel: "Bahasa Indonesia"}
+    ];
+
+    const dataSiswaPerKelas = {
+        "VII": ["Abdul Rafik Agel", "Adindawati A. Hajamati", "Alwin Nusi", "Aprilia R. Lajiku", "Basrin Tahir Latif", "DELVI A. ATIMA", "Dion Lolo", "FADLIYANTO TOMAYAHU", "Febriyani A. Nusi", "Fitri Suna", "Indriyani Abdullah", "Isra Hilala", "Jhanet Jelitha Makawimbang", "JUWITA FRANSISCA HUSAIN", "Mohamad Fadli Umar", "Nur Annisa Mointi", "NUR AZIZHA OHIHIYA", "Nur Salsa bila Putri D. Solang", "Prasiska Wumu", "REZAL HILE", "Sagita Putri Suleman", "Tri Sutrisno"],
+        "VIII": ["ABD. ALIF TOLU", "Abdul malik Dukalang", "ALFAJRI ABUSINA", "ALVIANSYAH AHMAD UGE", "ANAVINA RAMADHANI", "Aril Hursan", "AYUDIA KADIR", "FEBIOLA H. DUYO", "Fira Siska Tohiya", "FIRAWATY B. ASAMA", "Ilyas Igirisa", "Mega Putri Pelealu", "MOH. SAS FEBRIAN ATIMA", "Muhaimin H. Taruwa", "NIA SRI KARNIA ASAMA", "NUR AIN PUTRI HARINDA", "RAFAEL H. DATAU", "RIDWAN A. RAHMAN", "RIFALDI M. DUNGGIO", "RIRIN PALAPA", "SALWA IDRUS", "SILFA RAHIMA", "SUNANDIR TOBELO"],
+        "IX": ["AFDILA NUNA", "Almulia Ramadani", "Ana Mahful", "Anatasya S. Saini", "Aprilia Toonawu", "Desri E. Atima", "Flora Sagita Suna", "JELYTA PUTRI IN. TOMAYAHU", "JULIA PAKAYA", "Khumairah Rahman", "Lina Mobilingo", "Lisan Idrus", "MOHAMAD HAIKAL IDRUS", "MOHAMAD RAFI ADUKA", "Natasya Matalauni", "Nur Aulia Amora Yusuf", "Putra Ramadhan Kau", "RAHMAN SUPARDI", "RISKIYANTO AHMAD", "SALSA TOMAYAHU", "SELSI PULUHULAWA", "SINTA RAHIMA", "SYAHMINA CANDRADINATA", "TIYARA PAKAYA", "YUYUN ABDULLAH"]
+    };
+
+    let storageTP = { "VII": [""], "VIII": [""], "IX": [""] };
+    let guruAktif = null;
+    let kelasTerpilih = "";
+
+    function prosesLogin() {
+        const nip = document.getElementById('nipInput').value.trim();
+        const guru = databaseGuru.find(g => g.nip === nip);
+        if(guru) {
+            guruAktif = guru;
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.remove('hidden');
+            document.getElementById('dispNama').innerText = guru.nama;
+            document.getElementById('dispNip').innerText = guru.nip;
+            document.getElementById('dispStatus').innerText = guru.status;
+            document.getElementById('dispMapel').innerText = guru.mapel;
+        } else { alert("NIP tidak terdaftar!"); }
+    }
+
+    function setKelas(kls) {
+        kelasTerpilih = kls;
+        document.querySelectorAll('.k-input').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('in' + kls).classList.add('selected');
+        document.getElementById('labelKelas').innerText = "(Kelas " + kls + ")";
+        const sel = document.getElementById('selSiswa');
+        sel.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+        dataSiswaPerKelas[kls].sort().forEach(s => {
+            let opt = document.createElement('option'); opt.value = s; opt.innerText = s; sel.appendChild(opt);
+        });
+        renderInputTP();
+    }
+
+    function renderInputTP() {
+        const container = document.getElementById('containerTP');
+        container.innerHTML = "";
+        storageTP[kelasTerpilih].forEach((isiTP, index) => {
+            const input = document.createElement('input');
+            input.type = "text";
+            input.className = "tpl-tp";
+            input.value = isiTP;
+            input.placeholder = "Contoh: Memahami struktur sel...";
+            input.style.marginBottom = "10px";
+            input.oninput = function() {
+                storageTP[kelasTerpilih][index] = this.value;
+                renderTabelNilai(); 
+            };
+            container.appendChild(input);
+        });
+        renderTabelNilai();
+    }
+
+    function tambahBarisTP() {
+        if(!kelasTerpilih) return alert("Pilih kelas dahulu.");
+        storageTP[kelasTerpilih].push("");
+        renderInputTP();
+    }
+
+    function renderTabelNilai() {
+        const tbody = document.getElementById('bodyInputNilai');
+        tbody.innerHTML = "";
+        storageTP[kelasTerpilih].forEach((tp) => {
+            if(tp.trim() !== "") {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class="nama-tp-final">${tp}</td><td><input type="number" class="input-skor" placeholder="0" style="text-align:center;"></td>`;
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+    function showTab(type) {
+        document.getElementById('secInput').classList.toggle('hidden', type !== 'input');
+        document.getElementById('secLihat').classList.toggle('hidden', type !== 'lihat');
+        document.getElementById('tabInput').classList.toggle('active', type === 'input');
+        document.getElementById('tabLihat').classList.toggle('active', type === 'lihat');
+        if(type === 'lihat') muatNilai();
+    }
+
+    async function simpanData() {
+        const siswa = document.getElementById('selSiswa').value;
+        const teksTP = document.getElementsByClassName('nama-tp-final');
+        const skorTP = document.getElementsByClassName('input-skor');
+        if(!kelasTerpilih || !siswa) return alert("Pilih Siswa!");
+        let rinci = [], tot = 0, n = 0;
+        for(let i=0; i<teksTP.length; i++) {
+            if(skorTP[i].value !== "") {
+                tot += parseFloat(skorTP[i].value); n++;
+                rinci.push(`${teksTP[i].innerText}: ${skorTP[i].value}`);
+            }
+        }
+        if(n === 0) return alert("Isi nilai!");
+        const payload = {
+            guru: guruAktif.nama, status: guruAktif.status, mapel: guruAktif.mapel,
+            siswa: siswa, kelas: kelasTerpilih, rataRata: (tot/n).toFixed(2), rincian: rinci.join("; ")
+        };
+        const btn = document.getElementById('btnSimpan');
+        btn.innerText = "⏳ Menyimpan..."; btn.disabled = true;
+        try {
+            await fetch(URL_APPS_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("✅ Berhasil disimpan!");
+            document.getElementById('selSiswa').value = "";
+            Array.from(skorTP).forEach(input => input.value = "");
+        } catch(e) { alert("Gagal koneksi."); }
+        finally { btn.innerText = "🚀 Simpan ke Database"; btn.disabled = false; }
+    }
+
+    async function muatNilai() {
+        const loader = document.getElementById('loader');
+        const tbody = document.getElementById('bodyRekap');
+        const filterKls = document.getElementById('filterKelas').value;
+        loader.style.display = "block"; tbody.innerHTML = "";
+        try {
+            const resp = await fetch(URL_APPS_SCRIPT);
+            const data = await resp.json();
+            let filterData = data.filter(d => d.guru === guruAktif.nama);
+            if(filterKls !== "SEMUA") filterData = filterData.filter(d => d.kelas === filterKls);
+            if(filterData.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Data kosong.</td></tr>";
+            } else {
+                filterData.reverse().forEach(d => {
+                    let items = d.rincian.split("; ");
+                    let subTable = `<table class="sub-table">`;
+                    items.forEach(it => {
+                        let p = it.split(": ");
+                        subTable += `<tr><td>• ${p[0]}</td><td style="text-align:right; font-weight:bold; color:var(--blue); width:40px;">${p[1]}</td></tr>`;
+                    });
+                    subTable += `</table>`;
+                    tbody.innerHTML += `<tr>
+                        <td><b>${d.siswa}</b><br><small style="color:var(--gray)">Kelas ${d.kelas}</small></td>
+                        <td style="text-align:center; color:var(--blue); font-weight:bold;">${d.rataRata}</td>
+                        <td style="padding:5px;">${subTable}</td>
+                        <td style="font-size:0.75em;">${new Date(d.timestamp).toLocaleString('id-ID')}</td>
+                        <td style="text-align:center;"><button class="btn-delete" onclick="hapusData('${d.siswa}', '${d.rataRata}')">Hapus</button></td>
+                    </tr>`;
+                });
+            }
+        } catch(e) { tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Gagal muat data.</td></tr>"; }
+        finally { loader.style.display = "none"; }
+    }
+
+    async function hapusData(siswa, rataRata) {
+        if(!confirm(`Hapus data ${siswa}?`)) return;
+        const payload = { action: "delete", guru: guruAktif.nama, siswa: siswa, rataRata: rataRata };
+        try {
+            await fetch(URL_APPS_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("Sedang menghapus...");
+            setTimeout(muatNilai, 1500);
+        } catch(e) { }
+    }
+</script>
+</body>
+</html>

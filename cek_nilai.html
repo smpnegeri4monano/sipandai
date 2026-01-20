@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Siswa | SMPN 4 MONANO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-light: #f1f5f9;
+            --text-dark: #2e405e;
+            --text-secondary: #64748b;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Mengubah ke flex-start agar bisa scroll jika nilai banyak */
+            min-height: 100vh;
+            color: var(--text-dark);
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* Container Utama */
+        .portal-container {
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Kartu Login/Utama */
+        .login-card {
+            background: var(--white);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .icon-box {
+            font-size: 55px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            color: #3b5998;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-top: 8px;
+            margin-bottom: 35px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Input Styling (Mirip Portal Guru) */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: #fcfcfc;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Button Styling (Mirip Portal Guru) */
+        .btn-login {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Hasil Nilai Wrapper */
+        #hasilCari {
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .card-nilai {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        .nilai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .mapel-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .skor-bulat {
+            background: #eff6ff;
+            color: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .rincian-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .tp-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 0.85rem;
+        }
+
+        .tp-item:last-child { border: none; }
+
+        /* Loader & Error */
+        #loader { display: none; margin: 20px 0; font-weight: 600; color: var(--primary); text-align: center; }
+        .error-msg { color: #ef4444; margin-top: 15px; font-size: 0.9rem; font-weight: 600; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Sembunyikan form setelah login */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="portal-container">
+    <div id="mainCard" class="login-card">
+        <div class="icon-box">🏫</div>
+        <h1>sipandai SMPN 4 Monano</h1>
+        <p class="subtitle">Sistem Penilaian Digital dan Asesmen Integratif</p>
+
+        <div id="loginForm">
+            <div class="input-group">
+                <input type="text" id="namaSiswa" placeholder="Masukkan Nama Lengkap Anda" onkeyup="if(event.key === 'Enter') cariNilai()">
+            </div>
+            <button class="btn-login" onclick="cariNilai()">Login</button>
+        </div>
+
+        <div id="loader">⌛ Menyambungkan ke server...</div>
+        <div id="errorArea"></div>
+    </div>
+
+    <div id="hasilCari"></div>
+</div>
+
+<script>
+    // URL dari Google Apps Script Anda
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxpSVFkTH8tDKDkeMM1l7iDMlRfxkfAgfy3iMzX7nfl03lRIloew7pxHH7ONG8bmXsG/exec";
+
+    async function cariNilai() {
+        const inputNama = document.getElementById('namaSiswa').value.trim().toLowerCase();
+        const display = document.getElementById('hasilCari');
+        const loader = document.getElementById('loader');
+        const errorArea = document.getElementById('errorArea');
+        const loginForm = document.getElementById('loginForm');
+
+        if (inputNama.length < 3) {
+            alert("Silakan masukkan minimal 3 karakter nama.");
+            return;
+        }
+
+        // Reset tampilan
+        display.innerHTML = "";
+        errorArea.innerHTML = "";
+        loader.style.display = "block";
+
+        try {
+            const resp = await fetch(URL_APPS_SCRIPT);
+            const data = await resp.json();
+            
+            // Filter data siswa
+            const hasil = data.filter(d => d.siswa.toLowerCase().includes(inputNama));
+
+            if (hasil.length === 0) {
+                errorArea.innerHTML = `<p class="error-msg">Data tidak ditemukan. Pastikan nama sesuai dengan raport.</p>`;
+            } else {
+                // Berhasil Login: Sembunyikan Form & Ubah Teks Header
+                loginForm.classList.add('hidden');
+                document.querySelector('.subtitle').innerHTML = `Menampilkan data untuk: <strong>${inputNama.toUpperCase()}</strong>`;
+                document.querySelector('.icon-box').innerHTML = "👨‍🎓";
+
+                // Tampilkan Data Nilai
+                hasil.reverse().forEach((n) => {
+                    let rincianHTML = "";
+                    if (n.rincian) {
+                        let tps = n.rincian.split("; ");
+                        tps.forEach(tp => {
+                            let parts = tp.split(": ");
+                            rincianHTML += `
+                                <div class="tp-item">
+                                    <span>${parts[0]}</span>
+                                    <strong style="color:var(--primary)">${parts[1]}</strong>
+                                </div>`;
+                        });
+                    }
+
+                    display.innerHTML += `
+                        <div class="card-nilai">
+                            <div class="nilai-header">
+                                <div>
+                                    <div class="mapel-name">${n.mapel}</div>
+                                    <div style="font-size:0.8rem; color:var(--text-secondary)">Guru: ${n.guru}</div>
+                                </div>
+                                <div class="skor-bulat">${Math.round(n.rataRata)}</div>
+                            </div>
+                            <div class="rincian-box">
+                                <div style="font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:4px;">Tujuan Pembelajaran</div>
+                                ${rincianHTML}
+                            </div>
+                            <div style="text-align:right; margin-top:10px; font-size:0.7rem; color:#cbd5e1;">
+                                Kelas ${n.kelas} | ${new Date(n.timestamp).toLocaleDateString('id-ID')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Tambahkan Tombol Logout di bawah nilai
+                display.innerHTML += `
+                    <button onclick="location.reload()" style="width:100%; background:none; border:2px solid #cbd5e1; color:#64748b; padding:12px; border-radius:12px; font-weight:700; cursor:pointer; margin-top:10px; margin-bottom:40px;">
+                        Keluar / Kembali
+                    </button>
+                `;
+            }
+        } catch (e) {
+            errorArea.innerHTML = `<p class="error-msg">Terjadi kesalahan koneksi ke database.</p>`;
+            console.error(e);
+        } finally {
+            loader.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
